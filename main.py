@@ -18,7 +18,11 @@ def main():
     config = get_config()
 
     # configure logging
-    logging.basicConfig(level=config["log_level"])
+    logging.basicConfig(
+        level=config["log_level"],
+        format="%(asctime)s %(levelname)s %(message)s",
+        datefmt="%e%b%Y %l:%M:%S %p %Z"
+    )
 
     # instantiate Slack client
     slack_client = RTMClient(token=config["pbot_slack_token"], connect_method="rtm.start")
