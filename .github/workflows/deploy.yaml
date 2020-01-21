@@ -30,8 +30,8 @@ jobs:
       - name: Stop and remove existing pyslackkops container (if it exists)
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-        run: ssh deployer@ruiz.house docker stop pyslackops || true; docker rm pyslackops || true
+        run: ssh deployer@ruiz.house "docker stop pyslackops || true; docker rm pyslackops || true"
       - name: Start new pyslackops container
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-        run: ssh deployer@ruiz.house docker login -u $GITHUB_ACTOR -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com; docker run --name pyslackops --detach --network --main --restart always -e "PBOT_SLACK_TOKEN=${{ secrets.PBOT_SLACK_TOKEN }}" docker.pkg.github.com/jar349/pyslackops/pyslackops:${{ github.sha }}
+        run: ssh deployer@ruiz.house "docker login -u $GITHUB_ACTOR -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com; docker run --name pyslackops --detach --network --main --restart always -e "PBOT_SLACK_TOKEN=${{ secrets.PBOT_SLACK_TOKEN }}" docker.pkg.github.com/jar349/pyslackops/pyslackops:${{ github.sha }}"
