@@ -11,7 +11,7 @@ jobs:
       - name: Build Docker Image
         run: docker build -t jar349/pyslackops:${{ github.sha }} $GITHUB_WORKSPACE
       - name: Upload Docker Image
-        run: docker push docker.pkg.github.com/jar349/pyslackops:${{ github.sha }}
+        run: docker push jar349/pyslackops:${{ github.sha }}
   deploy:
     name: Start new pyslackops Docker Container
     needs: build
@@ -34,4 +34,4 @@ jobs:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           docker login -u jar349 -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
-          ssh deployer@ruiz.house docker run --name pyslackops --detaach --network --main --restart always -e "PBOT_SLACK_TOKEN=${{ secrets.PBOT_SLACK_TOKEN }}" docker.pkg.github.com/jar349/pyslackops:${{ github.sha }}
+          ssh deployer@ruiz.house docker run --name pyslackops --detach --network --main --restart always -e "PBOT_SLACK_TOKEN=${{ secrets.PBOT_SLACK_TOKEN }}" docker.pkg.github.com/jar349/pyslackops:${{ github.sha }}
