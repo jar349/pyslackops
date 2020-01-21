@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Login to GitHub Package Registry
-        run: docker login -u jar349 -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
+        run: docker login -u $GITHUB_ACTOR -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
       - name: Build Docker Image
         run: docker build -t jar349/pyslackops:${{ github.sha }} $GITHUB_WORKSPACE
       - name: Upload Docker Image
@@ -34,6 +34,4 @@ jobs:
       - name: Start new pyslackops container
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-        run: |
-          docker login -u jar349 -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
-          ssh deployer@ruiz.house docker run --name pyslackops --detach --network --main --restart always -e "PBOT_SLACK_TOKEN=${{ secrets.PBOT_SLACK_TOKEN }}" docker.pkg.github.com/jar349/pyslackops/pyslackops:${{ github.sha }}
+        run: ssh deployer@ruiz.house docker login -u $GITHUB_ACTOR -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com; docker run --name pyslackops --detach --network --main --restart always -e "PBOT_SLACK_TOKEN=${{ secrets.PBOT_SLACK_TOKEN }}" docker.pkg.github.com/jar349/pyslackops/pyslackops:${{ github.sha }}
