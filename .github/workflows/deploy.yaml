@@ -36,4 +36,4 @@ jobs:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           docker login -u jar349 -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
-          ssh deployer@ruiz.house docker run --name pyslackops --detach --network --main --restart always -e "PBOT_SLACK_TOKEN=${{ secrets.PBOT_SLACK_TOKEN }}" docker.pkg.github.com/jar349/pyslackops:${{ github.sha }}
+          ssh deployer@ruiz.house docker run --name pyslackops --detach --network --main --restart always -e "PBOT_SLACK_TOKEN=${{ secrets.PBOT_SLACK_TOKEN }}" docker.pkg.github.com/jar349/pyslackops/pyslackops:${{ github.sha }}
