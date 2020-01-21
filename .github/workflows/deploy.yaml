@@ -9,7 +9,7 @@ jobs:
       - name: Login to GitHub Package Registry
         run: docker login -u jar349 -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
       - name: Build Docker Image
-        run: docker build -t jar349/pyslackops:${{ github.sha }} ${{ github.GITHUB_WORKSPACE }}/pyslackops
+        run: docker build -t jar349/pyslackops:${{ github.sha }} $GITHUB_WORKSPACE/pyslackops
       - name: Upload Docker Image
         run: docker push docker.pkg.github.com/jar349/pyslackops:${{ github.sha }}
   prepare:
