@@ -1,0 +1,37 @@
+name: Deploy
+on: [deployment]
+jobs:
+  build:
+    name: Docker Packaging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to GitHub Package Registry
+        run: docker login -u $GITHUB_ACTOR -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
+      - name: Build Docker Image
+        run: docker build -t jar349/pyslackops:${{ github.sha }} $GITHUB_WORKSPACE
+      - name: Upload Docker Image
+        run: |
+          docker tag jar349/pyslackops:${{ github.sha }} docker.pkg.github.com/jar349/pyslackops/pyslackops:${{ github.sha }}
+          docker push docker.pkg.github.com/jar349/pyslackops/pyslackops:${{ github.sha }}
+  deploy:
+    name: Start new pyslackops Docker Container
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write out deployer SSH key
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan ruiz.house >> ~/.ssh/known_hosts
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.DEPLOYER_SSH_KEY }}"
+      - name: Stop and remove existing pyslackkops container (if it exists)
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: ssh deployer@ruiz.house "docker stop pyslackops || true; docker rm pyslackops || true"
+      - name: Start new pyslackops container
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: ssh deployer@ruiz.house "docker login -u $GITHUB_ACTOR -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com; docker run --name pyslackops --detach --network main --restart always -e "PBOT_SLACK_TOKEN=${{ secrets.PBOT_SLACK_TOKEN }}" docker.pkg.github.com/jar349/pyslackops/pyslackops:${{ github.sha }}"
