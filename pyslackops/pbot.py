@@ -60,7 +60,7 @@ class PBot:
             response = namespace_handler.get_response(command, event)
             web_client.chat_postMessage(
                 channel=channel_id,
-                text=response
+                text=response["message"]
             )
         except Exception as ex:
             web_client.chat_postMessage(
