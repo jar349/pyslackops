@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 slackclient = "*"
 requests = "*"
+validators = "*"
 
 [requires]
 python_version = "3.7"

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import uuid
 
 import requests
 from validators import url
@@ -41,7 +42,7 @@ class APIHandler(NamespaceHandler):
      - POST /handle
     """
 
-    def __init__(self, namespace, base_url, cert, private_key, ca_cert):
+    def __init__(self, namespace, base_url, cert=None, private_key=None, ca_cert=None):
         super().__init__(namespace)
         self.base_url = base_url
         self.cert = cert
@@ -57,7 +58,7 @@ class APIHandler(NamespaceHandler):
         return extract_func(res)
 
     def get_basic_help(self):
-        return self._do_get(self.base_url + "/help", lambda res: res.json())
+        return self._do_get(self.base_url + "/help", lambda res: res.text)
 
     def get_metadata(self):
         return self._do_get(self.base_url + "/metadata", lambda res: res.json())
@@ -155,3 +156,24 @@ example usage:
 
         # we have a valid URL that's worth testing
         result = {}
+        passed = True
+        test_handler = APIHandler(str(uuid.uuuid4()), ns_url)
+        try:
+            result['metadata'] = test_handler.get_metadata()
+        except Exception as ex:
+            passed = False
+            result['metadata'] = repr(ex)
+
+        try:
+            result['basic_help'] = test_handler.get_basic_help()
+        except Exception as ex:
+            passed = False
+            result['basic_help'] = repr(ex)
+
+        try:
+            result['ping'] = test_handler.get_response("ping", None)
+        except Exception as ex:
+            passed = False
+            result['ping'] = repr(ex)
+
+        return passed, result
