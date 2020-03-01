@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 import requests
+from validators import url
 
 
 class HandlerException(Exception):
@@ -39,6 +40,7 @@ class APIHandler(NamespaceHandler):
      - GET /metadata
      - POST /handle
     """
+
     def __init__(self, namespace, base_url, cert, private_key, ca_cert):
         super().__init__(namespace)
         self.base_url = base_url
@@ -81,13 +83,15 @@ class PBotHandler(NamespaceHandler):
     """
     The PBotHandler is special because it gets a reference back to PBot
     """
+
     def __init__(self, pbot):
         super().__init__("pbot")
         self.pbot = pbot
         self.cmd_map = {
             "help": self.get_basic_help,
             "ping": self.ping,
-            "list": self.list_namespaces
+            "list": self.list_namespaces,
+            "test": self.test_handler
         }
 
     def get_response(self, command, event):
@@ -101,6 +105,16 @@ class PBotHandler(NamespaceHandler):
         return func(cmd_parts)
 
     def get_metadata(self):
+        headers = {
+            "Accept": "text/plain"
+        }
+        res = requests.get(
+            self.base_url + "/help",
+            headers=headersw
+        )
+        if res.status_code != 200:
+            raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
+        return res.json()
         return {}
 
     def get_basic_help(self, args):
@@ -109,6 +123,7 @@ class PBotHandler(NamespaceHandler):
  - help: the command you've just run
  - ping: pbot will respond PONG!; good for testing pbot
  - list: shows the list of registered namespaces
+ - ns-test: tests a URL for conformance and readiness for registration 
  
 example usage:
   .pbot ping
@@ -127,3 +142,16 @@ example usage:
             response.append(F" - {namespace}")
         response.append("```")
         return '\n'.join(response)
+
+    def test_handler(self, arg_list):
+        if not arg_list:
+            return F":negative_squared_cross_mark: test requires a URL as an argument"
+
+        # the only expected argument is the url of the service
+        ns_url = arg_list[0]
+        if not url.url(ns_url):
+            return (":negative_squared_cross_mark: that is not a valid URL. see: " +
+                    "https://validators.readthedocs.io/en/latest/index.html#module-validators.url")
+
+        # we have a valid URL that's worth testing
+        result = {}
