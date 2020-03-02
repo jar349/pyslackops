@@ -111,7 +111,7 @@ class PBotHandler(NamespaceHandler):
         }
         res = requests.get(
             self.base_url + "/help",
-            headers=headersw
+            headers=headers
         )
         if res.status_code != 200:
             raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
@@ -131,7 +131,7 @@ example usage:
 ```"""
 
     def ping(self, args):
-        return "PONG!"
+        return {"message": "PONG!"}
 
     def list_namespaces(self, args):
         response = [

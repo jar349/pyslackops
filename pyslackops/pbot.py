@@ -60,11 +60,12 @@ class PBot:
             if command.lower() == "help":
                 response = namespace_handler.get_basic_help()
             else:
-                response = namespace_handler.get_response(command, event)
+                # for now, just grab the message field of the response
+                response = namespace_handler.get_response(command, event)["message"]
 
             web_client.chat_postMessage(
                 channel=channel_id,
-                text=response["message"]
+                text=response
             )
         except Exception as ex:
             web_client.chat_postMessage(
