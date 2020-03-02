@@ -49,9 +49,9 @@ class APIHandler(NamespaceHandler):
         self.private_key = private_key
         self.ca_cert = ca_cert
 
-    def _do_get(self, url, extract_func):
+    def _do_get(self, request_url, extract_func):
         headers = {"Accept": "application/json"}
-        res = requests.get(url, headers=headers, cert=(self.cert, self.private_key), verify=self.ca_cert)
+        res = requests.get(request_url, headers=headers, cert=(self.cert, self.private_key), verify=self.ca_cert)
         if res.status_code != 200:
             raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
 
