@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import uuid
 
 import requests
-from validators import url
+import validators
 
 
 class HandlerException(Exception):
@@ -146,33 +146,33 @@ example usage:
 
     def test_handler(self, arg_list):
         if not arg_list:
-            return {"message": F":negative_squared_cross_mark: test requires a URL as an argument"}
+            return {"message": F":red_circle: test requires a URL as an argument"}
 
         # the only expected argument is the url of the service
         ns_url = arg_list[0]
-        if not url.url(ns_url):
-            return {"message": (":negative_squared_cross_mark: that is not a valid URL. see: " +
+        if not validators.url(ns_url):
+            return {"message": (":red_circle: that is not a valid URL. see: " +
                     "https://validators.readthedocs.io/en/latest/index.html#module-validators.url")}
 
         # we have a valid URL that's worth testing
         result = {"passed": True}
-        test_handler = APIHandler(str(uuid.uuuid4()), ns_url)
+        test_handler = APIHandler(str(uuid.uuid4()), ns_url)
         try:
             result['metadata'] = test_handler.get_metadata()
         except Exception as ex:
-            passed = False
+            result["passed"] = False
             result['metadata'] = repr(ex)
 
         try:
             result['basic_help'] = test_handler.get_basic_help()
         except Exception as ex:
-            passed = False
+            result["passed"] = False
             result['basic_help'] = repr(ex)
 
         try:
             result['ping'] = test_handler.get_response("ping", None)
         except Exception as ex:
-            passed = False
+            result["passed"] = False
             result['ping'] = repr(ex)
 
         return {"message": str(result)}
