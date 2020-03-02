@@ -146,17 +146,16 @@ example usage:
 
     def test_handler(self, arg_list):
         if not arg_list:
-            return F":negative_squared_cross_mark: test requires a URL as an argument"
+            return {"message": F":negative_squared_cross_mark: test requires a URL as an argument"}
 
         # the only expected argument is the url of the service
         ns_url = arg_list[0]
         if not url.url(ns_url):
-            return (":negative_squared_cross_mark: that is not a valid URL. see: " +
-                    "https://validators.readthedocs.io/en/latest/index.html#module-validators.url")
+            return {"message": (":negative_squared_cross_mark: that is not a valid URL. see: " +
+                    "https://validators.readthedocs.io/en/latest/index.html#module-validators.url")}
 
         # we have a valid URL that's worth testing
-        result = {}
-        passed = True
+        result = {"passed": True}
         test_handler = APIHandler(str(uuid.uuuid4()), ns_url)
         try:
             result['metadata'] = test_handler.get_metadata()
@@ -176,4 +175,4 @@ example usage:
             passed = False
             result['ping'] = repr(ex)
 
-        return passed, result
+        return {"message": str(result)}
