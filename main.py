@@ -8,7 +8,7 @@ from pyslackops.pbot import PBot
 
 def get_config():
     return {
-        "log_level": os.environ.get("PBOT_LOG_LEVEL", "INFO"),
+        "log_level": os.environ.get("PBOT_LOG_LEVEL", "DEBUG"),
         "pbot_slack_token": os.environ["PBOT_SLACK_TOKEN"]
     }
 

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import logging
 import uuid
 
 import requests
@@ -88,6 +89,7 @@ class PBotHandler(NamespaceHandler):
     def __init__(self, pbot):
         super().__init__("pbot")
         self.pbot = pbot
+        self.log = logging.getLogger(__name__)
         self.cmd_map = {
             "help": self.get_basic_help,
             "ping": self.ping,
@@ -96,6 +98,7 @@ class PBotHandler(NamespaceHandler):
         }
 
     def get_response(self, command, event):
+        self.log.debug(F"Will get a response to command: {command}")
         cmd_parts = command.split(' ')
         cmd = cmd_parts.pop(0)  # this leaves only arguments
 
@@ -116,7 +119,6 @@ class PBotHandler(NamespaceHandler):
         if res.status_code != 200:
             raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
         return res.json()
-        return {}
 
     def get_basic_help(self, args):
         return """.pbot commands:
@@ -151,10 +153,11 @@ example usage:
         # the only expected argument is the url of the service
         ns_url = arg_list[0]
         if not validators.url(ns_url):
-            return {"message": (":red_circle: that is not a valid URL. see: " +
+            return {"message": (F":red_circle: `{ns_url}` is not a valid URL. see: " +
                     "https://validators.readthedocs.io/en/latest/index.html#module-validators.url")}
 
         # we have a valid URL that's worth testing
+        self.log.info(F"Will test URL: {ns_url}")
         result = {"passed": True}
         test_handler = APIHandler(str(uuid.uuid4()), ns_url)
         try:
