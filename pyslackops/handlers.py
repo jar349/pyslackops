@@ -5,6 +5,8 @@ import uuid
 import requests
 import validators
 
+from pyslackops.formatters import SlackFormattedSubstring
+
 
 class HandlerException(Exception):
     pass
@@ -150,8 +152,11 @@ example usage:
         if not arg_list:
             return {"message": F":red_circle: test requires a URL as an argument"}
 
-        # the only expected argument is the url of the service
-        ns_url = arg_list[0]
+        # the only expected argument is the url of the service, so ignore any others.  In addition, slack sends links
+        # surrounded by angle brackets (<, >) if it recognizes a URL, so we need to extract the URL from that.
+        substring = SlackFormattedSubstring(arg_list[0])
+        ns_url = substring.get_content_or_none() if substring.is_url_link() else substring.get_raw()
+
         if not validators.url(ns_url):
             return {"message": (F":red_circle: `{ns_url}` is not a valid URL. see: " +
                     "https://validators.readthedocs.io/en/latest/index.html#module-validators.url")}
