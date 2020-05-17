@@ -106,7 +106,7 @@ class PBotHandler(NamespaceHandler):
 
         func = self.cmd_map.get(cmd, None)
         if not func:
-            return ":warning: I don't know about that command (try `.pbot help` for help)"
+            return {"message": ":warning: I don't know about that command (try `.pbot help` for help)"}
 
         return func(cmd_parts)
 
@@ -125,7 +125,7 @@ class PBotHandler(NamespaceHandler):
  - help: the command you've just run
  - ping: pbot will respond PONG!; good for testing pbot
  - list: shows the list of registered namespaces
- - ns-test: tests a URL for conformance and readiness for registration 
+ - test: tests a URL for conformance and readiness for registration 
  
 example usage:
   .pbot ping
