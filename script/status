@@ -17,18 +17,18 @@ then
 fi
 
 # either get the contents of the latest deploy id or an empty string
-DEPLOY_ID=$(cat $APP_DIR/script/latest-deploy.id 2>/dev/null || echo -n "")
+DEPLOY_ID=$(cat $APP_DIR/.latest-deploy.id 2>/dev/null || echo -n "")
 
 if [ -z "$DEPLOY_ID" ]
 then
-  echo "Cannot get the latest deploy from $APP_DIR/script/latest-deploy.id"
+  echo "Cannot get the latest deploy from $APP_DIR/.latest-deploy.id"
   exit 1
 fi
 
 curl --request POST \
   -H "Authorization: token $GITHUB_PAT" \
   -H "Content-Type: application/vnd.github.flash-preview+json" \
-  --data '{"state": "$STATUS"}' \
+  --data "{\"state\": \"${STATUS}\"}" \
   https://api.github.com/repos/jar349/pyslackops/deployments/$DEPLOY_ID/statuses
 
 if [ "$?" -eq "0" ]

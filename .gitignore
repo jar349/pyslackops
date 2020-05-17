@@ -1,3 +1,3 @@
 .venv/
 .idea/
-script/latest-deploy.id
+.latest-deploy.id

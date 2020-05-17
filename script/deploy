@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+APP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+
 if [ -z "$GITHUB_PAT" ]
 then
   echo "No Personal Access Token found in env var GITHUB_PAT"
@@ -8,11 +10,12 @@ fi
 
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 PAYLOAD=$(uuidgen)
+DATA="{\"ref\":\"${BRANCH_NAME}\", \"payload\": \"${PAYLOAD}\", \"description\": \"Deploy of branch $BRANCH_NAME\"}"
 
-curl --request POST \
+curl -sS --request POST \
   -H "Authorization: token $GITHUB_PAT" \
-  --data '{"ref":"$BRANCH_NAME", "payload": "$PAYLOAD", "description": "Deploy of branch $BRANCH_NAME"}' \
-  https://api.github.com/repos/jar349/pyslackops/deployments | jq '.id' | tee ./latest-deploy.id
+  --data "$DATA" \
+  https://api.github.com/repos/jar349/pyslackops/deployments | jq '.id' | tee "$APP_DIR/.latest-deploy.id"
 
 if [ "$?" -eq "0" ]
 then
