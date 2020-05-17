@@ -143,7 +143,7 @@ example usage:
         for namespace in self.pbot.get_namespaces():
             response.append(F" - {namespace}")
         response.append("```")
-        return '\n'.join(response)
+        return {"message": '\n'.join(response)}
 
     def test_handler(self, cmd_args):
         if not cmd_args:
