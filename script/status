@@ -1,0 +1,39 @@
+#! /usr/bin/env bash
+
+APP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+
+if [ -z "$GITHUB_PAT" ]
+then
+  echo "No Personal Access Token found in env var GITHUB_PAT"
+  exit 1
+fi
+
+STATUS=$1
+
+if [ -z "$STATUS" ]
+then
+  echo "Usage: status [error, failure, in_progress, queued, pending, or success]"
+  exit 1
+fi
+
+# either get the contents of the latest deploy id or an empty string
+DEPLOY_ID=$(cat $APP_DIR/script/latest-deploy.id 2>/dev/null || echo -n "")
+
+if [ -z "$DEPLOY_ID" ]
+then
+  echo "Cannot get the latest deploy from $APP_DIR/script/latest-deploy.id"
+  exit 1
+fi
+
+curl --request POST \
+  -H "Authorization: token $GITHUB_PAT" \
+  -H "Content-Type: application/vnd.github.flash-preview+json" \
+  --data '{"state": "$STATUS"}' \
+  https://api.github.com/repos/jar349/pyslackops/deployments/$DEPLOY_ID/statuses
+
+if [ "$?" -eq "0" ]
+then
+  echo "Deployment $DEPLOY_ID updated with status $STATUS"
+else
+  echo "Failed to create status for deployment $DEPLOY_ID"
+fi

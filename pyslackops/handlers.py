@@ -111,18 +111,11 @@ class PBotHandler(NamespaceHandler):
         return func(cmd_parts)
 
     def get_metadata(self):
-        headers = {
-            "Accept": "text/plain"
+        return {
+            "protocol_version": "0.1"
         }
-        res = requests.get(
-            self.base_url + "/help",
-            headers=headers
-        )
-        if res.status_code != 200:
-            raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
-        return res.json()
 
-    def get_basic_help(self, args):
+    def get_basic_help(self):
         return """.pbot commands:
 ```
  - help: the command you've just run
@@ -137,7 +130,7 @@ example usage:
     def ping(self, args):
         return {"message": "PONG!"}
 
-    def list_namespaces(self, args):
+    def list_namespaces(self):
         response = [
             "The following namespaces are registered with pbot: ",
             "_(For each of the following namespaces try `.namespace help`)_"

@@ -1,0 +1,23 @@
+#! /usr/bin/env bash
+
+if [ -z "$GITHUB_PAT" ]
+then
+  echo "No Personal Access Token found in env var GITHUB_PAT"
+  exit 1
+fi
+
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+PAYLOAD=$(uuidgen)
+
+curl --request POST \
+  -H "Authorization: token $GITHUB_PAT" \
+  --data '{"ref":"$BRANCH_NAME", "payload": "$PAYLOAD", "description": "Deploy of branch $BRANCH_NAME"}' \
+  https://api.github.com/repos/jar349/pyslackops/deployments | jq '.id' | tee ./latest-deploy.id
+
+if [ "$?" -eq "0" ]
+then
+  DEPLOY_ID=$(cat $APP_DIR/script/latest-deploy.id)
+  echo "Deployment created with ID $DEPLOY_ID and payload $PAYLOAD"
+else
+  echo "Failed to create deployment"
+fi
