@@ -5,7 +5,7 @@ import re
 class SlackFormattedSubstring:
     SLACK_FORMAT_RE = re.compile("<(.*?)>")
 
-    def init(self, raw):
+    def __init__(self, raw):
         self.raw = raw
 
     @staticmethod

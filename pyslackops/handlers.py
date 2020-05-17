@@ -93,7 +93,7 @@ class PBotHandler(NamespaceHandler):
         self.pbot = pbot
         self.log = logging.getLogger(__name__)
         self.cmd_map = {
-            "help": self.get_basic_help,
+            "help": self.get_help,
             "ping": self.ping,
             "list": self.list_namespaces,
             "test": self.test_handler
@@ -106,38 +106,35 @@ class PBotHandler(NamespaceHandler):
 
         func = self.cmd_map.get(cmd, None)
         if not func:
-            return ":warning: I don't know about that command (try `.pbot help` for help)"
+            return {"message": ":warning: I don't know about that command (try `.pbot help` for help)"}
 
         return func(cmd_parts)
 
     def get_metadata(self):
-        headers = {
-            "Accept": "text/plain"
+        return {
+            "protocol_version": "0.1"
         }
-        res = requests.get(
-            self.base_url + "/help",
-            headers=headers
-        )
-        if res.status_code != 200:
-            raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
-        return res.json()
 
-    def get_basic_help(self, args):
+    def get_help(self, cmd_args):
+        # maybe one day support better help on individual commands.  For now, just get basic help
+        return self.get_basic_help()
+
+    def get_basic_help(self):
         return """.pbot commands:
 ```
  - help: the command you've just run
  - ping: pbot will respond PONG!; good for testing pbot
  - list: shows the list of registered namespaces
- - ns-test: tests a URL for conformance and readiness for registration 
+ - test: tests a URL for conformance and readiness for registration 
  
 example usage:
   .pbot ping
 ```"""
 
-    def ping(self, args):
+    def ping(self, cmd_args):
         return {"message": "PONG!"}
 
-    def list_namespaces(self, args):
+    def list_namespaces(self, cmd_args):
         response = [
             "The following namespaces are registered with pbot: ",
             "_(For each of the following namespaces try `.namespace help`)_"
@@ -146,15 +143,15 @@ example usage:
         for namespace in self.pbot.get_namespaces():
             response.append(F" - {namespace}")
         response.append("```")
-        return '\n'.join(response)
+        return {"message": '\n'.join(response)}
 
-    def test_handler(self, arg_list):
-        if not arg_list:
+    def test_handler(self, cmd_args):
+        if not cmd_args:
             return {"message": F":red_circle: test requires a URL as an argument"}
 
         # the only expected argument is the url of the service, so ignore any others.  In addition, slack sends links
         # surrounded by angle brackets (<, >) if it recognizes a URL, so we need to extract the URL from that.
-        substring = SlackFormattedSubstring(arg_list[0])
+        substring = SlackFormattedSubstring(cmd_args[0])
         ns_url = substring.get_content_or_none() if substring.is_url_link() else substring.get_raw()
 
         if not validators.url(ns_url):
