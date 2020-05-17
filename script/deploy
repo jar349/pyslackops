@@ -19,7 +19,7 @@ curl -sS --request POST \
 
 if [ "$?" -eq "0" ]
 then
-  DEPLOY_ID=$(cat $APP_DIR/script/latest-deploy.id)
+  DEPLOY_ID=$(cat $APP_DIR/.latest-deploy.id)
   echo "Deployment created with ID $DEPLOY_ID and payload $PAYLOAD"
 else
   echo "Failed to create deployment"
