@@ -5,7 +5,7 @@ RUN pipx install pipenv
 RUN mkdir /home/vscode/app
 WORKDIR /home/vscode/app
 
-COPY Pipfile Pipfile.lock .
+COPY Pipfile Pipfile.lock ./
 RUN pipenv sync
 
 COPY . .
