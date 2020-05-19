@@ -1,6 +1,7 @@
 {
     "name": "Python 3.7 with Pipenv",
     "build": {
-        "dockerfile": "Dockerfile"
+        "dockerfile": "Dockerfile",
+        "context": ".."
     }
 }
