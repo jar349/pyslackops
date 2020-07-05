@@ -102,13 +102,6 @@ class PBotHandler(NamespaceHandler):
         super().__init__("pbot")
         self.pbot = pbot
         self.log = logging.getLogger(__name__)
-        self.cmd_map = {
-            "help": self.get_help,
-            "ping": self.get_ping,
-            "list": self.list_namespaces,
-            "test": self.report_test_result,
-            "register": self.register_namespace
-        }
 
     def get_response(self, command, event):
         self.log.debug(F"Will get a response to command: {command}")
