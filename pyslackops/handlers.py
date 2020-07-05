@@ -5,6 +5,7 @@ import uuid
 import requests
 import validators
 
+from pyslackops import RegistrationError
 from pyslackops.formatters import SlackFormattedSubstring
 
 
@@ -96,7 +97,8 @@ class PBotHandler(NamespaceHandler):
             "help": self.get_help,
             "ping": self.ping,
             "list": self.list_namespaces,
-            "test": self.test_handler
+            "test": self.report_test_result,
+            "register": self.register_namespace
         }
 
     def get_response(self, command, event):
@@ -122,11 +124,12 @@ class PBotHandler(NamespaceHandler):
     def get_basic_help(self):
         return """.pbot commands:
 ```
- - help: the command you've just run
- - ping: pbot will respond PONG!; good for testing pbot
- - list: shows the list of registered namespaces
- - test: tests a URL for conformance and readiness for registration 
- 
+ - help:     the command you've just run
+ - ping:     pbot will respond PONG!; good for testing pbot
+ - list:     shows the list of registered namespaces
+ - test:     tests a URL for conformance and readiness for registration 
+ - register: registers an ops handler for a namespace
+
 example usage:
   .pbot ping
 ```"""
@@ -145,7 +148,66 @@ example usage:
         response.append("```")
         return {"message": '\n'.join(response)}
 
-    def test_handler(self, cmd_args):
+    def register_namespace(self, cmd_args):
+        # expected cmd_args: ["the_namespace", "the_handler_URL"]
+        if len(cmd_args) != 2:
+            return {"message": ":red_circle: register requires two arguments: namespace and handler URL"}
+
+        namespace = cmd_args[0]
+        handler_url = cmd_args[1]
+
+        test_result = self.test_handler(handler_url)
+        if not test_result["passed"]:
+            return {"message": ":red_circle: the provided handler does not seem to be valid. Try: `.pbot test [URL]`"}
+
+        try:
+            self.pbot.register_handler(APIHandler(namespace, handler_url))
+        except RegistrationError as re:
+            return {"message": F":red_circle: Unable to register handler: {re.message}"}
+
+        return {"message": f":tada: :white_check_mark: New handler for namespace `.{namespace}` registered"}
+
+    def test_handler(self, handler_url):
+        result = {"passed": True}
+        
+        if not handler_url:
+            result["passed"] = False
+            result["problem"] = "test requires a URL as an argument"
+            return result
+        
+        if not validators.url(handler_url):
+            result["passed"] = False
+            result["problem"] = (F"{handler_url} is not a valid URL. see: " +
+                                 "https://validators.readthedocs.io/en/latest/index.html#module-validators.url")
+            return result
+
+        self.log.info(F"Will test URL: {handler_url}")
+        test_handler = APIHandler(str(uuid.uuid4()), handler_url)
+        
+        try:
+            result["metadata"] = test_handler.get_metadata()
+        except Exception as ex:
+            result["passed"] = False
+            result["problem"] = "The metadata endpoint failed"
+            result["metadata"] = repr(ex)
+
+        try:
+            result["basic_help"] = test_handler.get_basic_help()
+        except Exception as ex:
+            result["passed"] = False
+            result["problem"] = "The basic help endpoint failed"
+            result["basic_help"] = repr(ex)
+
+        try:
+            result["ping"] = test_handler.get_response("ping", None)
+        except Exception as ex:
+            result["passed"] = False
+            result["problem"] = "The ping endpoint failed"
+            result["ping"] = repr(ex)
+
+        return result
+
+    def report_test_result(self, cmd_args):
         if not cmd_args:
             return {"message": F":red_circle: test requires a URL as an argument"}
 
@@ -154,30 +216,7 @@ example usage:
         substring = SlackFormattedSubstring(cmd_args[0])
         ns_url = substring.get_content_or_none() if substring.is_url_link() else substring.get_raw()
 
-        if not validators.url(ns_url):
-            return {"message": (F":red_circle: `{ns_url}` is not a valid URL. see: " +
-                    "https://validators.readthedocs.io/en/latest/index.html#module-validators.url")}
+        test_result = self.test_handler(ns_url)
 
-        # we have a valid URL that's worth testing
-        self.log.info(F"Will test URL: {ns_url}")
-        result = {"passed": True}
-        test_handler = APIHandler(str(uuid.uuid4()), ns_url)
-        try:
-            result['metadata'] = test_handler.get_metadata()
-        except Exception as ex:
-            result["passed"] = False
-            result['metadata'] = repr(ex)
-
-        try:
-            result['basic_help'] = test_handler.get_basic_help()
-        except Exception as ex:
-            result["passed"] = False
-            result['basic_help'] = repr(ex)
-
-        try:
-            result['ping'] = test_handler.get_response("ping", None)
-        except Exception as ex:
-            result["passed"] = False
-            result['ping'] = repr(ex)
-
-        return {"message": str(result)}
+        if not test_result["passed"]:
+            return {"message": F":red_circle: {test_result['problem']}\n{str(test_result)}"}
