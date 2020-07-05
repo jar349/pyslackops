@@ -56,7 +56,8 @@ class APIHandler(NamespaceHandler):
         self.cert = cert
         self.private_key = private_key
         self.ca_cert = ca_cert
-
+        self.log = logging.getLogger(__name__)
+        
     def _do_get(self, request_url, headers, extract_func):
         res = requests.get(request_url, headers=headers, cert=(self.cert, self.private_key), verify=self.ca_cert)
         if res.status_code != 200:
