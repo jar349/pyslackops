@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 import logging
-import uuid
-
+import json
 import requests
+import uuid
 import validators
 
 from pyslackops import RegistrationError
@@ -26,6 +26,10 @@ class NamespaceHandler(ABC):
 
     @abstractmethod
     def get_basic_help(self):
+        pass
+
+    @abstractmethod
+    def get_ping(self):
         pass
 
     @abstractmethod
@@ -79,7 +83,7 @@ class APIHandler(NamespaceHandler):
         }
         res = requests.post(
             self.base_url + "/handle",
-            {"namespace": self.namespace, "command": command, "event": event},
+            {"namespace": self.namespace, "command": command, "event": json.dumps(event)},
             headers=headers,
             cert=(self.cert, self.private_key),
             verify=self.ca_cert
@@ -100,7 +104,7 @@ class PBotHandler(NamespaceHandler):
         self.log = logging.getLogger(__name__)
         self.cmd_map = {
             "help": self.get_help,
-            "ping": self.ping,
+            "ping": self.get_ping,
             "list": self.list_namespaces,
             "test": self.report_test_result,
             "register": self.register_namespace
@@ -139,8 +143,8 @@ example usage:
   .pbot ping
 ```"""
 
-    def ping(self, cmd_args):
-        return {"message": "PONG!"}
+    def get_ping(self, cmd_args):
+        return {"message": "pong"}
 
     def list_namespaces(self, cmd_args):
         response = [
@@ -167,7 +171,7 @@ example usage:
         # slack sends links surrounded by angle brackets (<, >) if it recognizes a URL, so we need to extract the URL
         substring = SlackFormattedSubstring(raw_url)
         handler_url = substring.get_content_or_none() if substring.is_url_link() else substring.get_raw()
-        
+
         test_result = self.test_handler(handler_url)
         if not test_result["passed"]:
             return {"message": ":red_circle: the provided handler does not seem to be valid. Try: `.pbot test [URL]`"}

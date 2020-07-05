@@ -59,6 +59,8 @@ class PBot:
         try:
             if command.lower() == "help":
                 response = namespace_handler.get_basic_help()
+            elif command.lower() == "ping":
+                response = namespace_handler.get_ping()
             else:
                 # for now, just grab the message field of the response
                 response = namespace_handler.get_response(command, event)["message"]
