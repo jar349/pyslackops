@@ -225,5 +225,7 @@ example usage:
 
         test_result = self.test_handler(ns_url)
 
-        if not test_result["passed"]:
+        if test_result["passed"]:
+            return {"message": F":tada: :white_check_mark: `{ns_url}` passes!\n{str(test_result)}"}
+        else:
             return {"message": F":red_circle: {test_result['problem']}\n{str(test_result)}"}
