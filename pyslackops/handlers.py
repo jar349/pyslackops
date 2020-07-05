@@ -53,8 +53,7 @@ class APIHandler(NamespaceHandler):
         self.private_key = private_key
         self.ca_cert = ca_cert
 
-    def _do_get(self, request_url, extract_func):
-        headers = {"Accept": "application/json"}
+    def _do_get(self, request_url, headers, extract_func):
         res = requests.get(request_url, headers=headers, cert=(self.cert, self.private_key), verify=self.ca_cert)
         if res.status_code != 200:
             raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
@@ -62,10 +61,16 @@ class APIHandler(NamespaceHandler):
         return extract_func(res)
 
     def get_basic_help(self):
-        return self._do_get(self.base_url + "/help", lambda res: res.text)
+        headers = {"Accept": "plain/text"}
+        return self._do_get(self.base_url + "/help", headers, lambda res: res.text)
 
     def get_metadata(self):
-        return self._do_get(self.base_url + "/metadata", lambda res: res.json())
+        headers = {"Accept": "application/json"}
+        return self._do_get(self.base_url + "/metadata", headers, lambda res: res.json())
+
+    def get_ping(self):
+        headers = {"Accept": "plain/text"}
+        return self._do_get(self.base_url + "/ping", headers, lambda res: res.text)
 
     def get_response(self, command, event):
         headers = {
@@ -199,7 +204,9 @@ example usage:
             result["basic_help"] = repr(ex)
 
         try:
-            result["ping"] = test_handler.get_response("ping", None)
+            result["ping"] = test_handler.get_ping()
+            if result["ping"] != "pong":
+                raise Exception("/ping endpoint responded but not with: pong")
         except Exception as ex:
             result["passed"] = False
             result["problem"] = "The ping endpoint failed"

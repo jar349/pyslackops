@@ -10,9 +10,9 @@ So for now, expect json to come back with a 'message' key.
 - metadata should have versioned schema
 
 ### CURL commands for deployment creation, retrieval,  and completion
-- `curl --request GET -H "Authorization: token github-pat" https://api.github.com/repos/jar349/pyslackops/deployments`
-- `curl --request POST -H "Authorization: token github-pat" --data '{"ref":"test-deploys", "payload": "this is the payload", "description": "Branch Deploy"}' https://api.github.com/repos/jar349/pyslackops/deployments`
-- `curl --request POST -H "Authorization: token github-pat" --data '{"state": "success", "description": "this describes the status"}' https://api.github.com/repos/jar349/pyslackops/deployments/195620169/statuses`
+- `curl --request GET -H "Authorization: token $GITHUB_PAT" https://api.github.com/repos/jar349/pyslackops/deployments`
+- `curl --request POST -H "Authorization: token $GITHUB_PAT" --data '{"ref":"test-deploys", "payload": "this is the payload", "description": "Branch Deploy"}' https://api.github.com/repos/jar349/pyslackops/deployments`
+- `curl --request POST -H "Authorization: token $GITHUB_PAT" --data '{"state": "success", "description": "this describes the status"}' https://api.github.com/repos/jar349/pyslackops/deployments/195620169/statuses`
 
 ### Protocol Design
 in order to handle unknown chatops consistently, each chatop must implement its
@@ -42,6 +42,10 @@ pyslackops protocol knows about the following keys in the metadata response:
 
 The intent of this endpoint is to enable interoperability between pyslackops 
 and chatops that implement differing versions of the pyslackops protocol.
+
+#### GET /ping
+pyslackops will send no payload, no query params.  The response should be of 
+type `text/plain` and should contain the string `pong`.
 
 #### POST /handle
 pyslackops will post data of type `application/json`.  It will be a single 
