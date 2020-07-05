@@ -81,13 +81,16 @@ class APIHandler(NamespaceHandler):
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
-        res = requests.post(
-            self.base_url + "/handle",
-            {"namespace": self.namespace, "command": command, "event": json.dumps(event)},
-            headers=headers  # ,
-            # cert=(self.cert, self.private_key),
-            # verify=self.ca_cert
-        )
+        body = {
+            "namespace": self.namespace,
+            "command": command,
+            "event": json.dumps(event)
+        }
+        request_url = self.base_url + "/handle"
+
+        self.log.debug(f"Sending POST to {request_url} with headers {headers} and body {body}")
+
+        res = requests.post(request_url, None, body, headers=headers)
         if res.status_code != 200:
             raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
         return res.json()
