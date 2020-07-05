@@ -82,16 +82,16 @@ class APIHandler(NamespaceHandler):
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
-        body = {
+        data = {
             "namespace": self.namespace,
             "command": command,
             "event": event
         }
         request_url = self.base_url + "/handle"
 
-        self.log.debug(f"Sending POST to {request_url} with headers {headers} and body {body}")
+        self.log.debug(f"Sending POST to {request_url} with headers {headers} and body {data}")
 
-        res = requests.post(request_url, body, headers=headers)
+        res = requests.post(request_url, json=data, headers=headers)
         if res.status_code != 200:
             raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
         return res.json()
