@@ -113,22 +113,25 @@ class PBotHandler(NamespaceHandler):
     def get_response(self, command, event):
         self.log.debug(F"Will get a response to command: {command}")
         cmd_parts = command.split(' ')
-        cmd = cmd_parts.pop(0)  # this leaves only arguments
+        cmd = cmd_parts.pop(0).lower()  # this leaves only arguments
 
-        func = self.cmd_map.get(cmd, None)
-        if not func:
+        if cmd == "help":
+            return self.get_basic_help()
+        elif cmd == "list":
+            return self.list_namespaces()
+        elif cmd == "ping":
+            return self.get_ping()
+        elif cmd == "register":
+            return self.register_namespace(cmd_parts)
+        elif cmd == "test":
+            return self.report_test_result(cmd_parts)
+        else:
             return {"message": ":warning: I don't know about that command (try `.pbot help` for help)"}
-
-        return func(cmd_parts)
 
     def get_metadata(self):
         return {
             "protocol_version": "0.1"
         }
-
-    def get_help(self, cmd_args):
-        # maybe one day support better help on individual commands.  For now, just get basic help
-        return self.get_basic_help()
 
     def get_basic_help(self):
         return """.pbot commands:
@@ -143,10 +146,10 @@ example usage:
   .pbot ping
 ```"""
 
-    def get_ping(self, cmd_args):
+    def get_ping(self):
         return {"message": "pong"}
 
-    def list_namespaces(self, cmd_args):
+    def list_namespaces(self):
         response = [
             "The following namespaces are registered with pbot: ",
             "_(For each of the following namespaces try `.namespace help`)_"
