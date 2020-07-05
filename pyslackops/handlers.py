@@ -57,7 +57,7 @@ class APIHandler(NamespaceHandler):
         self.private_key = private_key
         self.ca_cert = ca_cert
         self.log = logging.getLogger(__name__)
-        
+
     def _do_get(self, request_url, headers, extract_func):
         res = requests.get(request_url, headers=headers, cert=(self.cert, self.private_key), verify=self.ca_cert)
         if res.status_code != 200:
@@ -85,13 +85,13 @@ class APIHandler(NamespaceHandler):
         body = {
             "namespace": self.namespace,
             "command": command,
-            "event": json.dumps(event)
+            "event": event
         }
         request_url = self.base_url + "/handle"
 
         self.log.debug(f"Sending POST to {request_url} with headers {headers} and body {body}")
 
-        res = requests.post(request_url, None, body, headers=headers)
+        res = requests.post(request_url, body, headers=headers)
         if res.status_code != 200:
             raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
         return res.json()
