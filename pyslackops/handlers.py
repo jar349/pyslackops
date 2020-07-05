@@ -140,7 +140,7 @@ example usage:
 ```"""
 
     def get_ping(self):
-        return {"message": "pong"}
+        return "pong"
 
     def list_namespaces(self):
         response = [
