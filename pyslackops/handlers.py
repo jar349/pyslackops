@@ -159,8 +159,15 @@ example usage:
             return {"message": ":red_circle: register requires two arguments: namespace and handler URL"}
 
         namespace = cmd_args[0]
-        handler_url = cmd_args[1]
+        raw_url = cmd_args[1]
 
+        if namespace.startswith("."):
+            return {"message": ":red_circle: The registered namespace must not start with a dot"}
+
+        # slack sends links surrounded by angle brackets (<, >) if it recognizes a URL, so we need to extract the URL
+        substring = SlackFormattedSubstring(raw_url)
+        handler_url = substring.get_content_or_none() if substring.is_url_link() else substring.get_raw()
+        
         test_result = self.test_handler(handler_url)
         if not test_result["passed"]:
             return {"message": ":red_circle: the provided handler does not seem to be valid. Try: `.pbot test [URL]`"}
