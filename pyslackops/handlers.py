@@ -84,9 +84,9 @@ class APIHandler(NamespaceHandler):
         res = requests.post(
             self.base_url + "/handle",
             {"namespace": self.namespace, "command": command, "event": json.dumps(event)},
-            headers=headers,
-            cert=(self.cert, self.private_key),
-            verify=self.ca_cert
+            headers=headers  # ,
+            # cert=(self.cert, self.private_key),
+            # verify=self.ca_cert
         )
         if res.status_code != 200:
             raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
