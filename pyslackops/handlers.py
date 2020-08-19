@@ -59,7 +59,13 @@ class APIHandler(NamespaceHandler):
         self.log = logging.getLogger(__name__)
 
     def _do_get(self, request_url, headers, extract_func):
-        res = requests.get(request_url, headers=headers, cert=(self.cert, self.private_key), verify=self.ca_cert)
+        res = requests.get(
+            request_url,
+            timeout=5,
+            headers=headers,
+            cert=(self.cert, self.private_key),
+            verify=self.ca_cert)
+
         if res.status_code != 200:
             raise HandlerException(F"Handler for namespace {self.namespace} returned HTTP Status {res.status_code}")
 
