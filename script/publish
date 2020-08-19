@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+APP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+cd "$APP_DIR"
+
+docker build -t jar349/pyslackops:latest . && \
+docker push jar349/pyslackops:latest
